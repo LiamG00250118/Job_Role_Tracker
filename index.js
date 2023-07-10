@@ -1,13 +1,14 @@
 const inquirer = require("inquirer");
 const mysql = require('mysql2');
 
+//create connection with sql
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: 'Airpr0963!',
     database: 'manager_hub'
   });
-
+//function starts the initial prompts
 function startPrompts() {
     console.log('Welcome to the Manager Hub');
 
@@ -49,7 +50,7 @@ function startPrompts() {
       }
     })
 }
-
+//function to view the departments saved in database
 function viewDepartments() {
     connection.query('SELECT * FROM departments', (error, results) => {
         if (error) throw error;
@@ -60,6 +61,7 @@ function viewDepartments() {
 
     startPrompts();
 }
+//function to view the roles saved in database
 function viewRoles() {
     connection.query('SELECT * FROM roles', (error, results) => {
         if (error) throw error;
@@ -71,6 +73,7 @@ function viewRoles() {
     startPrompts();
 
 }
+//function to view the employees saved in database
 function viewEmployees() {
     connection.query('SELECT * FROM employees', (error, results) => {
         if (error) throw error;
@@ -82,6 +85,7 @@ function viewEmployees() {
     startPrompts();
 
 }
+//function to add departments to database
 function addDepartment() {
     inquirer.prompt([
       {
@@ -106,7 +110,7 @@ function addDepartment() {
     });
   }
 
-
+//function to add role to database
   function addRole() {
     inquirer.prompt([
       {
@@ -143,6 +147,7 @@ function addDepartment() {
     });
 }
 
+//function to add employee to database
 function addEmployee() {
     inquirer.prompt([
       {
@@ -168,7 +173,7 @@ function addEmployee() {
       {
         type: 'input',
         name: 'managerID',
-        message: 'Enter manager ID for the employee (if applicable)',
+        message: 'Enter manager ID for the employee',
       },
     ]).then((answers) => {
       const employeeID = answers.employeeID;
@@ -184,12 +189,40 @@ function addEmployee() {
       });
     });
   }
+//function to update the role of current employee
+  function updateRole() {
+    connection.query('SELECT * FROM employees', (error, results) => {
+      if (error) throw error;
   
-function updateRole(){
-    console.log('7');
+      
+      inquirer.prompt([
+        {
+          type: 'list',
+          name: 'employeeID',
+          message: 'Select the employee to update their role:',
+          choices: results.map((employee) => ({
+            name: `${employee.first_name} ${employee.last_name}`,
+            value: employee.id,
+          })),
+        },
+        {
+          type: 'input',
+          name: 'newRoleID',
+          message: 'Enter the new role ID for the employee:',
+        },
+      ]).then((answers) => {
+        const employeeID = answers.employeeID;
+        const newRoleID = answers.newRoleID;
+  
+        
+        connection.query('UPDATE employees SET role_id = ? WHERE id = ?', [newRoleID, employeeID], (error, results) => {
+          if (error) throw error;
+          console.log('Employee role updated successfully!');
+          startPrompts();
+        });
+      });
+    });
+  }
 
-}
-
-
-
+//starts the code with function call
 startPrompts();
